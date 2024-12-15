@@ -4,6 +4,17 @@ import xml.etree.ElementTree as ET
 from tqdm import tqdm
 from PIL import Image
 import json
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+# Настройка Kaggle API
+api = KaggleApi()
+api.authenticate()
+
+# Настройка URL датасетов
+DATASET_1_KAGGLE = "mcagriaksoy/amateur-unmanned-air-vehicle-detection-dataset"
+DATASET_2_KAGGLE = "dasmehdixtr/drone-dataset-uav"
+DATASET_1_LOCAL = "./dataset_1"
+DATASET_2_LOCAL = "./dataset_2"
 
 # Пути к исходным и выходным данным
 DATASET_1_DIR = "./dataset_1/Database1/Database1"
@@ -98,8 +109,8 @@ def process_dataset_2_xml(xml_dir, output_images_dir, output_annotations_dir):
 # Основная функция
 def main():
     # Загрузка датасетов (раскомментируй при первом запуске)
-    # api.dataset_download_files(DATASET_1_KAGGLE, path=DATASET_1_DIR, unzip=True)
-    # api.dataset_download_files(DATASET_2_KAGGLE, path=DATASET_2_DIR, unzip=True)
+    api.dataset_download_files(DATASET_1_KAGGLE, path=DATASET_1_LOCAL, unzip=True)
+    api.dataset_download_files(DATASET_2_KAGGLE, path=DATASET_2_LOCAL, unzip=True)
 
     print("Processing Dataset 1...")
     process_dataset_1(DATASET_1_DIR, IMAGES_DIR, ANNOTATIONS_DIR)
