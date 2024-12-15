@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import cv2
 import torch
@@ -6,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class YoloDataset(Dataset):
-    def __init__(self, images_dir: str, labels_dir: str, transform=None):
+    def __init__(self, images_dir: Path, labels_dir: Path, transform=None):
         self.images_dir = images_dir
         self.labels_dir = labels_dir
         self.transform = transform

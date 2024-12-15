@@ -39,7 +39,6 @@ def download_dataset(
 
 def convert_xml_to_yolo(dataset_dir: Path) -> None:
     for image in dataset_dir.iterdir():
-        # Открываем изображение, чтобы получить его размеры
         if image.suffix.lower() not in {".jpg", ".png", ".jpeg"}:
             continue
 
@@ -49,7 +48,6 @@ def convert_xml_to_yolo(dataset_dir: Path) -> None:
         with Image.open(str(image)) as img:
             image_width, image_height = img.size
 
-        # Парсим XML файл
         if not xml_file.exists():
             raise Exception(str(xml_file))
 
@@ -58,27 +56,22 @@ def convert_xml_to_yolo(dataset_dir: Path) -> None:
 
         with open(str(yolo_file), "w") as f:
             for obj in root.findall("object"):
-                # Получаем название класса
                 class_name = obj.find("name").text
 
-                # Здесь предполагается, что класс "drone" имеет индекс 0
                 class_id = (
                     0 if class_name == "drone" else -1
-                )  # или другие классы, если их больше
+                )
 
-                # Получаем координаты bounding box
                 xmin = int(obj.find("bndbox/xmin").text)
                 ymin = int(obj.find("bndbox/ymin").text)
                 xmax = int(obj.find("bndbox/xmax").text)
                 ymax = int(obj.find("bndbox/ymax").text)
 
-                # Нормализуем координаты
                 x_center = (xmin + xmax) / 2.0 / image_width
                 y_center = (ymin + ymax) / 2.0 / image_height
                 width = (xmax - xmin) / float(image_width)
                 height = (ymax - ymin) / float(image_height)
 
-                # Записываем в YOLO формат
                 f.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
 
 
@@ -94,12 +87,10 @@ def process_dataset(
     for image in tqdm(
         dataset.base_path.iterdir(), desc=f"Processing Dataset {dataset.name}"
     ):
-        # Копируем изображение
         if image.suffix.lower() in {".jpg", ".png", ".jpeg"}:
             dest = output_images_dir / image.name
             dest.write_bytes(image.read_bytes())
 
-        # Копируем аннотацию YOLO
         if image.suffix.lower() == ".txt":
             dest = output_annotations_dir / image.name
             dest.write_text(image.read_text())

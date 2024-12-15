@@ -1,0 +1,24 @@
+[project]
+name = "hse_dd"
+authors = [
+    {name = "Maskaev Artem"},
+    {name = "Anton Gusev"},
+]
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+version="0.0.1"
+dependencies = [
+    "tensorboard==2.17.0",
+    "kagglehub==0.3.4",
+]
+description = "DD homework"
+
+[build-system]
+requires = [
+    "setuptools>=45",
+]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+"Source" = "https://github.com/ye11owSub/hse-dd"
+
