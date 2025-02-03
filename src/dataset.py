@@ -93,4 +93,4 @@ def process_dataset(
 
         if image.suffix.lower() == ".txt":
             dest = output_annotations_dir / image.name
-            dest.write_text(image.read_text())
+            dest.write_text(image.read_text()) 
