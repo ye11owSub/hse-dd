@@ -6,6 +6,7 @@ from PIL import Image
 import streamlit as st
 from pathlib import Path
 import numpy as np
+from typing import List, Dict, Tuple
 
 from .dataset import Dataset
 
@@ -166,11 +167,6 @@ def visualize_data(images_dir, annotations_dir):
 
     # График распределения классов объектов
     fig, ax = plt.subplots()
-    #ax.bar(object_counts.keys(), object_counts.values())
-    #ax.set_title("Распределение типов объектов")
-    #ax.set_xlabel("Тип объекта (class_id)")
-    #ax.set_ylabel("Частота")
-
     ax.bar(class_0_count, class_minus1_count)
     ax.set_title("Распределение типов объектов")
     ax.set_xlabel("Кол-во объектов")
@@ -204,16 +200,14 @@ def plot_sample_images(dataset: Dataset, num_samples: int = 5) -> None:
     
     samples = np.random.choice(images, min(num_samples, len(images)), replace=False)
     
-    fig, axes = plt.subplots(1, len(samples), figsize=(15, 5))
+    fig, axes = plt.subplots(1, len(samples), figsize=(20, 4))
     if len(samples) == 1:
         axes = [axes]
     
     for ax, img_path in zip(axes, samples):
-        # Загрузка изображения
         img = Image.open(img_path)
         ax.imshow(img)
         
-        # Загрузка аннотаций
         annotation_path = img_path.parent / f"{img_path.stem}.txt"
         if annotation_path.exists():
             img_width, img_height = img.size
@@ -221,39 +215,37 @@ def plot_sample_images(dataset: Dataset, num_samples: int = 5) -> None:
                 for line in f:
                     class_id, x_center, y_center, width, height = map(float, line.strip().split())
                     
-                    # Конвертация координат YOLO в пиксели
                     x1 = int((x_center - width/2) * img_width)
                     y1 = int((y_center - height/2) * img_height)
                     x2 = int((x_center + width/2) * img_width)
                     y2 = int((y_center + height/2) * img_height)
                     
-                    # Отрисовка бокса
                     rect = plt.Rectangle((x1, y1), x2-x1, y2-y1, 
                                       fill=False, color='red', linewidth=2)
                     ax.add_patch(rect)
         
         ax.axis('off')
-        ax.set_title(f"Image {img_path.stem}")
+        ax.set_title(f"{img_path.name}", fontsize=10)
     
     plt.tight_layout()
     plt.show()
 
-
-def dataset_statistics(dataset: Dataset) -> dict:
+def print_dataset_summary(dataset: Dataset) -> Dict:
     """
-    Собирает статистику по датасету.
+    Анализирует и выводит статистику по датасету.
     
     Args:
         dataset: Объект датасета
     
     Returns:
-        dict: Словарь со статистикой
+        Dict: Статистика датасета
     """
     stats = {
         "total_images": 0,
-        "total_annotations": 0,
         "images_with_drones": 0,
+        "total_annotations": 0,
         "avg_boxes_per_image": 0,
+        "avg_image_size": (0, 0),
         "image_sizes": []
     }
     
@@ -277,26 +269,16 @@ def dataset_statistics(dataset: Dataset) -> dict:
     
     if stats["total_images"] > 0:
         stats["avg_boxes_per_image"] = stats["total_annotations"] / stats["total_images"]
+        if stats["image_sizes"]:
+            widths, heights = zip(*stats["image_sizes"])
+            stats["avg_image_size"] = (int(np.mean(widths)), int(np.mean(heights)))
+    
+    print(f"\nДатасет: {dataset.name}")
+    print("-" * 40)
+    print(f"Всего изображений: {stats['total_images']}")
+    print(f"Изображений с дронами: {stats['images_with_drones']}")
+    print(f"Всего аннотаций: {stats['total_annotations']}")
+    print(f"Среднее кол-во боксов на изображение: {stats['avg_boxes_per_image']:.2f}")
+    print(f"Средний размер изображения: {stats['avg_image_size'][0]}x{stats['avg_image_size'][1]}")
     
     return stats
-
-
-def print_dataset_summary(dataset: Dataset) -> None:
-    """
-    Выводит сводную информацию по датасету.
-    
-    Args:
-        dataset: Объект датасета
-    """
-    stats = dataset_statistics(dataset)
-    
-    print(f"Dataset Summary for {dataset.name}")
-    print("-" * 40)
-    print(f"Total images: {stats['total_images']}")
-    print(f"Images with drones: {stats['images_with_drones']}")
-    print(f"Total annotations: {stats['total_annotations']}")
-    print(f"Average boxes per image: {stats['avg_boxes_per_image']:.2f}")
-    
-    if stats["image_sizes"]:
-        widths, heights = zip(*stats["image_sizes"])
-        print(f"Average image size: {np.mean(widths):.0f}x{np.mean(heights):.0f}")
