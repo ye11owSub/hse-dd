@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import cv2
@@ -8,21 +7,23 @@ from torch.utils.data import Dataset
 
 class YoloDataset(Dataset):
     def __init__(self, images_dir: Path, labels_dir: Path, transform=None):
-        self.images_dir = images_dir
-        self.labels_dir = labels_dir
+        self.images_dir = Path(images_dir)
+        self.labels_dir = Path(labels_dir)
         self.transform = transform
-        self.image_files = [f for f in os.listdir(images_dir) if f.endswith(".jpg")]
+        self.image_files: list[Path] = [
+            f for f in self.images_dir.glob("*") if f.suffix == ".jpg"
+        ]
 
     def __len__(self):
         return len(self.image_files)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.images_dir, self.image_files[idx])
+        img_path = str(self.image_files[idx])
         image = cv2.imread(img_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        label_path = os.path.join(
-            self.labels_dir, self.image_files[idx].replace(".jpg", ".txt")
+        label_path = self.labels_dir / self.image_files[idx].name.replace(
+            ".jpg", ".txt"
         )
         boxes, labels = self._load_labels(label_path, image.shape[:2])
 
@@ -51,4 +52,3 @@ class YoloDataset(Dataset):
                 labels.append(int(cls) + 1)
 
         return boxes, labels
-

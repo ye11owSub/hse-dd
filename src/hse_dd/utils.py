@@ -58,9 +58,7 @@ def convert_xml_to_yolo(dataset_dir: Path) -> None:
             for obj in root.findall("object"):
                 class_name = obj.find("name").text
 
-                class_id = (
-                    0 if class_name == "drone" else -1
-                )
+                class_id = 0 if class_name == "drone" else -1
 
                 xmin = int(obj.find("bndbox/xmin").text)
                 ymin = int(obj.find("bndbox/ymin").text)
