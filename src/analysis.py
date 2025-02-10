@@ -66,26 +66,41 @@ def print_dataset_summary(dataset: Dataset) -> Dict:
         "total_annotations": 0,
         "avg_boxes_per_image": 0,
         "avg_image_size": (0, 0),
-        "image_sizes": []
+        "image_sizes": [],
+        "errors": []
     }
     
-    images = list(dataset.base_path.glob("*.jpg")) + \
-             list(dataset.base_path.glob("*.jpeg")) + \
-             list(dataset.base_path.glob("*.png"))
+    images = []
+    for ext in ['*.jpg', '*.jpeg', '*.png']:
+        images.extend(list(dataset.base_path.rglob(ext)))
     
     stats["total_images"] = len(images)
+    print(f"\nНайдено изображений: {stats['total_images']}")
+    
+    print(f"Путь к датасету: {dataset.base_path}")
+    print(f"Тип метаданных: {dataset.meta_type}")
     
     for img_path in images:
-        annotation_path = img_path.parent / f"{img_path.stem}.txt"
-        if annotation_path.exists():
+        try:
             with Image.open(img_path) as img:
                 stats["image_sizes"].append(img.size)
             
-            with open(annotation_path) as f:
-                boxes = f.readlines()
-                if len(boxes) > 0:
-                    stats["images_with_drones"] += 1
-                    stats["total_annotations"] += len(boxes)
+            annotation_path = img_path.parent / f"{img_path.stem}.txt"
+            if dataset.meta_type == "xml":
+                annotation_path = img_path.parent / f"{img_path.stem}.xml"
+            
+            if annotation_path.exists():
+                print(f"Обработка аннотации: {annotation_path}")
+                with open(annotation_path) as f:
+                    boxes = f.readlines()
+                    if len(boxes) > 0:
+                        stats["images_with_drones"] += 1
+                        stats["total_annotations"] += len(boxes)
+            else:
+                stats["errors"].append(f"Отсутствует аннотация для {img_path.name}")
+                
+        except Exception as e:
+            stats["errors"].append(f"Ошибка при обработке {img_path.name}: {str(e)}")
     
     if stats["total_images"] > 0:
         stats["avg_boxes_per_image"] = stats["total_annotations"] / stats["total_images"]
@@ -100,5 +115,12 @@ def print_dataset_summary(dataset: Dataset) -> Dict:
     print(f"Всего аннотаций: {stats['total_annotations']}")
     print(f"Среднее кол-во боксов на изображение: {stats['avg_boxes_per_image']:.2f}")
     print(f"Средний размер изображения: {stats['avg_image_size'][0]}x{stats['avg_image_size'][1]}")
+    
+    if stats["errors"]:
+        print("\nОшибки обработки:")
+        for error in stats["errors"][:10]:
+            print(f"- {error}")
+        if len(stats["errors"]) > 10:
+            print(f"... и еще {len(stats['errors']) - 10} ошибок")
     
     return stats
