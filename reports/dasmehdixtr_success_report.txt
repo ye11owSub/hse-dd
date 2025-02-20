@@ -1,0 +1,11 @@
+Отчёт об успешно обработанных изображениях: dasmehdixtr
+==================================================
+
+Форматы данных:
+- yolo в data/raw/dasmehdixtr/drone_dataset_yolo/dataset_txt
+- xml в data/raw/dasmehdixtr/dataset_xml_format/dataset_xml_format
+
+Корректно размеченные изображения:
+----------------------------------------
+
+Всего успешно обработанных изображений: 0
