@@ -5,6 +5,11 @@ from collections import Counter
 from PIL import Image
 import streamlit as st
 
+#TODO: добавить аналитику по каждому датасету
+#TODO: перенести визуализацию из streamlit в .ipynb
+#TODO: перенести визуализацию из streamlit в .ipynb
+
+
 # Пути к данным
 IMAGES_DIR = "./combined_dataset/images"
 ANNOTATIONS_DIR = "./combined_dataset/annotations"
